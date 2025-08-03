@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/product")
 public class ProductController {
     ProductRepository repository;
 
