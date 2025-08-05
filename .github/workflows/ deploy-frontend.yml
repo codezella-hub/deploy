@@ -1,0 +1,40 @@
+name: Deploy Angular Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'demo-ui/**'  # lance le pipeline uniquement si le frontend change
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies & build Angular
+        working-directory: demo-ui
+        run: |
+          npm install
+          npm run build --prod
+
+      - name: Build Docker image
+        run: |
+          docker build -t demo-ui-image ./demo-ui
+
+      - name: Push to DockerHub (optionnel)
+        if: false # mettre à true si tu veux pousser sur DockerHub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker tag demo-ui-image ton-utilisateur/demo-ui:latest
+          docker push ton-utilisateur/demo-ui:latest
+
+    # Ajoute ici le déploiement si tu veux : Render, Vercel (si supporte Docker), ou autre
