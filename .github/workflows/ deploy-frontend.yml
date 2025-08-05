@@ -5,14 +5,14 @@ on:
     branches:
       - main
     paths:
-      - 'demo-ui/**'  # lance le pipeline uniquement si le frontend change
+      - 'demo-ui/**'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -27,14 +27,13 @@ jobs:
           npm run build --prod
 
       - name: Build Docker image
-        run: |
-          docker build -t demo-ui-image ./demo-ui
+        run: docker build -t demo-ui ./demo-ui
 
-      - name: Push to DockerHub (optionnel)
-        if: false # mettre à true si tu veux pousser sur DockerHub
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker tag demo-ui-image ton-utilisateur/demo-ui:latest
-          docker push ton-utilisateur/demo-ui:latest
+      - name: Build Docker image
+        working-directory: demo
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/demo-ui:latest .
 
-    # Ajoute ici le déploiement si tu veux : Render, Vercel (si supporte Docker), ou autre
+      - name: Push Docker image
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/demo-ui:latest
